@@ -8,8 +8,9 @@ bungieUrlPrefix = "http://www.bungie.net"
 bungieGeometryPrefix = "/common/destiny_content/geometry/platform/mobile/geometry/"
 
 class DestinyModel(object):
-    geometry = []
     def __init__(self, jsonFile):
+        self.geometry = []
+        
         # Load the json file
         self.json = json.loads(jsonFile)
         
@@ -24,3 +25,18 @@ class DestinyModel(object):
             self.geometry.append(DestinyGeometry.parse(data))
         
         return
+    
+    def generate(self, fileName):
+        #Open file
+        with open(fileName, 'w') as fo:
+            print("Writing "+fileName+"...")
+                      
+            # Write name header
+            fo.write("solid temp\n")
+             
+            # Generate stl data for each geometry
+            for geometry in self.geometry:
+                geometry.generate(fo)
+         
+        return
+    

@@ -1,16 +1,24 @@
-import BungieDatabase
+from BungieDatabase import BungieDatabase 
 
 def main():
     # Create a Bungie Database object and connect to it
-    database = BungieDatabase.BungieDatabase()
-    database.connect()
+    db = BungieDatabase()
+    db.connect()
     
-    # Get the geometry model for Achlyophage Symbiote
-#     database.getModel(144553854)
-    model = database.getModel(346443849)
+#     model = db.getModel(144553854)
+#     model.generate("../stl/achlyophage_symbiote.stl")
+
+    model = db.getModel(346443849)
+    model.generate("../stl/mythoclast.stl")
+    
+#     model = db.getModel(3458901841)
+#     model.generate("../stl/light_in_the_abyss.stl")
+    
+#     model = db.getModel(845577225)
+#     model.generate("../stl/s13_graverobber.stl")
     
     # Close the database and exit
-    database.close()
+    db.close()
     print("Done")
     exit()
 

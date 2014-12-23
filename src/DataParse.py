@@ -2,6 +2,21 @@ import io
 import struct
 import numpy as np
 
+def VertexParse(dataBytes, datatype, offset, stride):
+    dataOut = []
+    i = offset
+    while i < len(dataBytes):
+        if datatype == "_vertex_format_attribute_short4":
+            dataOut.append(np.array(struct.unpack('<hhhh', dataBytes[i:i+8])))
+        elif datatype == "_vertex_format_attribute_float4":
+            dataOut.append(np.array(struct.unpack('<ffff', dataBytes[i:i+16])))
+        else:
+            print("Unknown type, exiting...")
+            exit()
+        i += stride
+            
+    return dataOut
+    
 class DataParse:
     def __init__(self, byteData):
         self.data = io.BytesIO(byteData)
