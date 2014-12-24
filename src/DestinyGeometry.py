@@ -30,7 +30,6 @@ class DestinyGeometry:
             if "render_metadata.js" in file.name:
                 jsonIndex = len(self.files)
             
-            print(file.name, file.startAddr, file.length)
             self.files.append(file)
             i -= 1
         
@@ -50,12 +49,13 @@ class DestinyGeometry:
         for i in range(self.fileCount):
             if filename == self.files[i].name:
                 return self.files[i]
-        print("Unable to retrieve geometry file",filename,"exiting...")
-        exit()
+        print("Unable to retrieve geometry file",filename,"...")
+        print("Please check your network connection and try again...")
+        return
         
     def generate(self, fo):
         # Parse each mesh in the geometry
-        for mesh in self.meshes:
+        for meshCount, mesh in enumerate(self.meshes):
             # Parse the normal and positional vertex buffers (ignore everything else for now)
             positions = []
             normals = []
@@ -63,9 +63,11 @@ class DestinyGeometry:
             for i, vB in enumerate(mesh["vertex_buffers"]):
                 stride = defVB[i]["stride"]
                 if stride != vB["stride_byte_size"]:
-                    print("Mismatched stride size, exiting...")
-                    exit()
+                    print("Mismatched stride size, please file an issue for this item...")
+                    return False
                 data = self.get(vB["file_name"]).data
+                if data == None:
+                    return False
                 for element in defVB[i]["elements"]:
                     if element["semantic"] == "_tfx_vb_semantic_position":
                         positions = VertexParse(data, element["type"], element["offset"], stride)
@@ -75,11 +77,13 @@ class DestinyGeometry:
             # Check that we found both a position and vertex buffer with the same length
             if (len(positions) == 0) or (len(normals) == 0) or (len(positions) != len(normals)):
                 print("Mismatched position and normal vectors, exiting...")
-                exit()
+                return False
                 
             # Parse the index buffer
             indexBuffer = []
             dataBytes = self.get(mesh["index_buffer"]["file_name"]).data
+            if dataBytes == None:
+                return False
             i = 0
             while i < len(dataBytes):
                 indexBuffer.append(struct.unpack('<h', dataBytes[i:i+2])[0])
@@ -153,8 +157,10 @@ class DestinyGeometry:
                     
                     flip = not flip
                     j += increment
+            print("Added mesh "+str(meshCount)+" from geometry "+self.name)
                 
-        return
+        # Success
+        return True
                 
 def parse(data):
     return DestinyGeometry(data)

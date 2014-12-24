@@ -1,3 +1,4 @@
+import os
 import json
 import urllib
 
@@ -36,7 +37,14 @@ class DestinyModel(object):
              
             # Generate stl data for each geometry
             for geometry in self.geometry:
-                geometry.generate(fo)
-         
+                status = geometry.generate(fo)
+                if status == False:
+                    # Something went wrong, cleanup the file and return
+                    fo.close()
+                    os.remove(fileName)
+        
+        # Success, close the file and return
+        print("Finished writing "+fileName+"!")
+        fo.close()
         return
     

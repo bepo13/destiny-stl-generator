@@ -11,8 +11,8 @@ def VertexParse(dataBytes, datatype, offset, stride):
         elif datatype == "_vertex_format_attribute_float4":
             dataOut.append(np.array(struct.unpack('<ffff', dataBytes[i:i+16])))
         else:
-            print("Unknown type, exiting...")
-            exit()
+            print("Unknown type, please file an issue for this item...")
+            return
         i += stride
             
     return dataOut

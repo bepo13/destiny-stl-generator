@@ -1,25 +1,42 @@
+import os
 from BungieDatabase import BungieDatabase 
 
+outputPath = "../stl"
+
 def main():
+    print("Welcome to the Destiny stl generator")
+    
     # Create a Bungie Database object and connect to it
     db = BungieDatabase()
     db.connect()
     
-#     model = db.getModel(144553854)
-#     model.generate("../stl/achlyophage_symbiote.stl")
-
-    model = db.getModel(346443849)
-    model.generate("../stl/mythoclast.stl")
-    
-#     model = db.getModel(3458901841)
-#     model.generate("../stl/light_in_the_abyss.stl")
-    
-#     model = db.getModel(845577225)
-#     model.generate("../stl/s13_graverobber.stl")
+    if not os.path.exists(outputPath):
+        print("Creating stl output directory "+outputPath)
+        os.makedirs(outputPath)
+        
+    while True:
+        # Get user request
+        command = input("Enter an item name or id: ")
+        
+        # Break if q, quit or exit was typed
+        if command == "q" or command == "quit" or command == "exit":
+            break
+        # Update the database if requested
+        elif command == "update":
+            db.update()
+        # Assume the entered text was an item name or id
+        else:
+            # Download the model data for this item
+            item = command
+            model = db.getModel(item)
+            
+            # If the model is not null generate the stl file
+            if model is not None:
+                model.generate(outputPath+"/"+item+".stl")
     
     # Close the database and exit
+    print("Bye.")
     db.close()
-    print("Done")
     exit()
 
 if __name__ == '__main__':
