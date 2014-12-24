@@ -102,8 +102,13 @@ class BungieDatabase(object):
         self.cursor.execute('''SELECT json FROM gear WHERE name=? COLLATE NOCASE''', (item,))
         response = self.cursor.fetchone()
         if response is None:
-            # Convert string as unsigned int to signed id
-            item = struct.unpack('l', struct.pack('L', int(item)))[0]
+            try:
+                # Convert string as unsigned int to signed id
+                item = struct.unpack('l', struct.pack('L', int(item)))[0]
+            except:
+                print("Unable to find item "+item+" please try again...")
+                return
+                
             self.cursor.execute('''SELECT json FROM gear WHERE id=?''', (item,))
             response = self.cursor.fetchone()
             if response is None:

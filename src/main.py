@@ -35,8 +35,8 @@ def main():
                 model.generate(outputPath+"/"+item+".stl")
     
     # Close the database and exit
-    print("Bye.")
     db.close()
+    print("Bye.")
     exit()
 
 if __name__ == '__main__':
