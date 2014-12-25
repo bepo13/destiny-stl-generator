@@ -69,7 +69,7 @@ class BungieDatabase(object):
             try:
                 response = urllib.request.urlopen(destinyManifestUrl+"inventoryItem/"+str(itemId))
                 itemManifest = json.loads(response.read().decode())
-                itemName = itemManifest["Response"]["data"]["inventoryItem"]["itemName"].replace('"',"")
+                itemName = itemManifest["Response"]["data"]["inventoryItem"]["itemName"].replace('"',"").rstrip()
                 print("Adding "+itemName+" from: "+destinyManifestUrl+"inventoryItem/"+str(itemId))
                 c.execute("INSERT INTO gear VALUES (?,?,?)", (itemId, itemName, itemJson))
             except:
@@ -103,8 +103,8 @@ class BungieDatabase(object):
         response = self.cursor.fetchone()
         if response is None:
             try:
-                # Convert string as unsigned int to signed id
-                item = struct.unpack('l', struct.pack('L', int(item)))[0]
+                # Convert id string to unsigned int
+                item = int(item)
             except:
                 print("Unable to find item "+item+" please try again...")
                 return

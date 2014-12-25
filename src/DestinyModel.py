@@ -43,8 +43,9 @@ class DestinyModel(object):
                     fo.close()
                     os.remove(fileName)
         
-        # Success, close the file and return
-        print("Finished writing "+fileName+"!")
-        fo.close()
+            # Success, close the file and return
+            print("Finished writing "+fileName+"!")
+            fo.close()
+            
         return
     

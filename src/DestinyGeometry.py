@@ -49,8 +49,7 @@ class DestinyGeometry:
         for i in range(self.fileCount):
             if filename == self.files[i].name:
                 return self.files[i]
-        print("Unable to retrieve geometry file",filename,"...")
-        print("Please check your network connection and try again...")
+        print("Unable to retrieve geometry file",filename,", please file an issue for this item...")
         return
         
     def generate(self, fo):
@@ -65,8 +64,9 @@ class DestinyGeometry:
                 if stride != vB["stride_byte_size"]:
                     print("Mismatched stride size, please file an issue for this item...")
                     return False
-                data = self.get(vB["file_name"]).data
-                if data == None:
+                try:
+                    data = self.get(vB["file_name"]).data
+                except:
                     return False
                 for element in defVB[i]["elements"]:
                     if element["semantic"] == "_tfx_vb_semantic_position":
@@ -81,8 +81,9 @@ class DestinyGeometry:
                 
             # Parse the index buffer
             indexBuffer = []
-            dataBytes = self.get(mesh["index_buffer"]["file_name"]).data
-            if dataBytes == None:
+            try:
+                dataBytes = self.get(mesh["index_buffer"]["file_name"]).data
+            except:
                 return False
             i = 0
             while i < len(dataBytes):
