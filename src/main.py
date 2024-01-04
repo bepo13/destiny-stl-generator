@@ -3,7 +3,7 @@ import requests
 from BungieDatabase import BungieDatabase 
 
 ## CONFIGURE - add API key between single quotes below ##
-apikey = ''
+apikey = '' # You can generate an API key at https://www.bungie.net/en/Application
 ###############
 
 outputPath = "../stl"
