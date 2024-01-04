@@ -24,8 +24,6 @@ class DestinyModel(object):
         for geometryFile in self.json["content"][0]["geometry"]:
             path = bungieUrlPrefix+bungieGeometryPrefix+geometryFile
             print("Geometry file: "+path)
-            #response = urllib.request.urlopen(path)
-            #data = DataParse.DataParse(response.read())
             response = self.s.get(path)
             data = DataParse.DataParse(response.content)
             self.geometry.append(DestinyGeometry.parse(data))

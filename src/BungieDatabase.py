@@ -35,23 +35,12 @@ class BungieDatabase(object):
             
         # Open the Destiny manifest from bungie.net and load it as json
         print("Downloading gear database from bungie.net...")
-        #response = urllib.request.urlopen(destinyManifestUrl)
-        #manifest = json.loads(response.read().decode())
-        response = s.get(destinyManifestUrl)
+        response = self.s.get(destinyManifestUrl)
         manifest = response.json()
         
         # Read the path for the gear database file and open it
         path = bungieUrlPrefix+manifest["Response"]["mobileGearAssetDataBases"][2]["path"]
-        #response = urllib.request.urlopen(path)
-        response = s.get(path)
-
-        # Gunzip the database file
-        #gearZip = zipfile.ZipFile(io.BytesIO(response.read()))
-        # zipNameList = gearZip.namelist()
-        # for filename in zipNameList:
-        #     if "asset_sql_content" in filename:
-        #         gearZip.extract(filename)
-        #         bungieDbFile = filename
+        response = self.s.get(path)
 
         gearZip = zipfile.ZipFile(io.BytesIO(response.content))
         zipNameList = gearZip.namelist()
@@ -74,22 +63,13 @@ class BungieDatabase(object):
         cBungie = connBungie.cursor()
         
         # Get the names for all items
-        #cBungie.execute("SELECT id, json FROM DestinyGearAssetsDefinition")
         cBungie.execute("SELECT CASE WHEN id < 0 THEN id + 4294967296 ELSE id END AS id, json FROM DestinyGearAssetsDefinition")
         for row in cBungie:
-            #itemId = struct.unpack('L', struct.pack('l', row[0]))[0]
             itemId = row[0]
             itemJson = row[1]
-            # print(itemJson)
             try:
-                # response = urllib.request.urlopen(destinyManifestUrl+"inventoryItem/"+str(itemId))
-                # itemManifest = json.loads(response.read().decode())
-                response = s.get(destinyManifestUrl+"DestinyInventoryItemDefinition/"+str(itemId))
-                # print(response.request.url)
-                # print(response.text)
-                # print(response.status_code)
+                response = self.s.get(destinyManifestUrl+"DestinyInventoryItemDefinition/"+str(itemId))
                 itemManifest = response.json()
-                #itemName = itemManifest["Response"]["data"]["inventoryItem"]["itemName"].replace('"',"").rstrip()
                 itemName = itemManifest["Response"]["displayProperties"]["name"]
                 print("Adding "+itemName+" from: "+destinyManifestUrl+"inventoryItem/"+str(itemId))
                 c.execute("INSERT INTO gear VALUES (?,?,?)", (itemId, itemName, itemJson))
