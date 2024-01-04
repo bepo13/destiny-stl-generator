@@ -2,7 +2,6 @@ import io
 import json
 import struct
 import os
-#import urllib.request
 import requests
 import zipfile
 import sqlite3

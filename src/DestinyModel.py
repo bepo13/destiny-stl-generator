@@ -1,6 +1,5 @@
 import os
 import json
-#import urllib
 import requests
 
 import DataParse
