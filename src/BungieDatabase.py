@@ -2,18 +2,19 @@ import io
 import json
 import struct
 import os
-import urllib.request
+import requests
 import zipfile
 import sqlite3
 
 import DestinyModel
 
 bungieUrlPrefix = "http://www.bungie.net"
-destinyManifestUrl = "http://www.bungie.net/platform/Destiny/Manifest/"
+destinyManifestUrl = "http://www.bungie.net/platform/Destiny2/Manifest/"
 myDbFile = "./database/gear.db"
 
 class BungieDatabase(object):
-    def __init__(self):
+    def __init__(self,requests_session):
+        self.s = requests_session
         # Set file path if database already exists
         if os.path.isfile(myDbFile):
             self.filePath = myDbFile
@@ -33,15 +34,14 @@ class BungieDatabase(object):
             
         # Open the Destiny manifest from bungie.net and load it as json
         print("Downloading gear database from bungie.net...")
-        response = urllib.request.urlopen(destinyManifestUrl)
-        manifest = json.loads(response.read().decode())
+        response = self.s.get(destinyManifestUrl)
+        manifest = response.json()
         
         # Read the path for the gear database file and open it
-        path = bungieUrlPrefix+manifest["Response"]["mobileGearAssetDataBases"][1]["path"]
-        response = urllib.request.urlopen(path)
+        path = bungieUrlPrefix+manifest["Response"]["mobileGearAssetDataBases"][2]["path"]
+        response = self.s.get(path)
 
-        # Gunzip the database file
-        gearZip = zipfile.ZipFile(io.BytesIO(response.read()))
+        gearZip = zipfile.ZipFile(io.BytesIO(response.content))
         zipNameList = gearZip.namelist()
         for filename in zipNameList:
             if "asset_sql_content" in filename:
@@ -62,18 +62,19 @@ class BungieDatabase(object):
         cBungie = connBungie.cursor()
         
         # Get the names for all items
-        cBungie.execute("SELECT id, json FROM DestinyGearAssetsDefinition")
+        cBungie.execute("SELECT CASE WHEN id < 0 THEN id + 4294967296 ELSE id END AS id, json FROM DestinyGearAssetsDefinition")
         for row in cBungie:
-            itemId = struct.unpack('L', struct.pack('l', row[0]))[0]
+            itemId = row[0]
             itemJson = row[1]
             try:
-                response = urllib.request.urlopen(destinyManifestUrl+"inventoryItem/"+str(itemId))
-                itemManifest = json.loads(response.read().decode())
-                itemName = itemManifest["Response"]["data"]["inventoryItem"]["itemName"].replace('"',"").rstrip()
+                response = self.s.get(destinyManifestUrl+"DestinyInventoryItemDefinition/"+str(itemId))
+                itemManifest = response.json()
+                itemName = itemManifest["Response"]["displayProperties"]["name"]
                 print("Adding "+itemName+" from: "+destinyManifestUrl+"inventoryItem/"+str(itemId))
                 c.execute("INSERT INTO gear VALUES (?,?,?)", (itemId, itemName, itemJson))
-            except:
+            except Exception as e:
                 # Skip this entry
+                print(str(e))
                 print("Skipping item id",itemId,"...")
                 continue
         
@@ -116,7 +117,7 @@ class BungieDatabase(object):
                 return
 
         # Return the model defined by the json file
-        return DestinyModel.DestinyModel(response[0])
+        return DestinyModel.DestinyModel(response[0],self.s)
     
     def close(self):
         # Close the gear database

@@ -1,15 +1,17 @@
 import os
 import json
-import urllib
+import requests
 
 import DataParse
 import DestinyGeometry
 
 bungieUrlPrefix = "http://www.bungie.net"
-bungieGeometryPrefix = "/common/destiny_content/geometry/platform/mobile/geometry/"
+#bungieGeometryPrefix = "/common/destiny_content/geometry/platform/mobile/geometry/"
+bungieGeometryPrefix = "/common/destiny2_content/geometry/platform/mobile/geometry/"
 
 class DestinyModel(object):
-    def __init__(self, jsonFile):
+    def __init__(self, jsonFile,requests_session):
+        self.s = requests_session
         self.geometry = []
         
         # Load the json file
@@ -21,8 +23,8 @@ class DestinyModel(object):
         for geometryFile in self.json["content"][0]["geometry"]:
             path = bungieUrlPrefix+bungieGeometryPrefix+geometryFile
             print("Geometry file: "+path)
-            response = urllib.request.urlopen(path)
-            data = DataParse.DataParse(response.read())
+            response = self.s.get(path)
+            data = DataParse.DataParse(response.content)
             self.geometry.append(DestinyGeometry.parse(data))
         
         return
